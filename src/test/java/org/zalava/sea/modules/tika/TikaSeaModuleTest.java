@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import org.zalava.SeaServiceFactory;
+import org.zalava.ZalavaServiceFactory;
 import org.zalava.content.ContentExtractionFailure;
 import org.zalava.content.ContentExtractionFailureCategory;
 import org.zalava.content.ContentExtractionLimits;
@@ -72,7 +72,7 @@ class TikaSeaModuleTest {
     assertThat(kit.version()).isEqualTo(System.getProperty("module.version"));
     assertThat(kit.module().providerFactories()).isEmpty();
 
-    List<SeaServiceFactory<?>> factories = kit.module().serviceFactories();
+    List<ZalavaServiceFactory<?>> factories = kit.module().serviceFactories();
     assertThat(factories).hasSize(1);
     assertThat(factories.getFirst().contract()).isEqualTo(ContentExtractor.CONTRACT);
 

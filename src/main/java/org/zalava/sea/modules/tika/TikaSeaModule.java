@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Properties;
 import org.zalava.ModuleDescriptor;
 import org.zalava.ProviderFactory;
-import org.zalava.SeaModule;
-import org.zalava.SeaServiceFactory;
+import org.zalava.ZalavaModule;
+import org.zalava.ZalavaServiceFactory;
 
 /** Service-only module for bounded Apache Tika 4 extraction. */
-public final class TikaSeaModule implements SeaModule {
+public final class TikaSeaModule implements ZalavaModule {
   public static final String MODULE_ID = "zalava-module-tika";
 
   @Override
@@ -25,7 +25,7 @@ public final class TikaSeaModule implements SeaModule {
   }
 
   @Override
-  public List<SeaServiceFactory<?>> serviceFactories() {
+  public List<ZalavaServiceFactory<?>> serviceFactories() {
     return List.of(new TikaContentExtractorFactory());
   }
 
