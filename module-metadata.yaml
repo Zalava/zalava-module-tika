@@ -1,0 +1,45 @@
+schemaVersion: 1
+modules:
+  - moduleId: zalava-module-tika
+    version: 0.1.0-alpha.1
+    displayName: Apache Tika Content Extractor
+    description: Bounded Apache Tika 4 content extraction for SEA knowledge sources.
+    supportUrl: https://github.com/Zalava/zalava-module-tika
+    artifact:
+      groupId: org.zalava.modules
+      artifactId: zalava-module-tika
+      version: 0.1.0-alpha.1
+    source:
+      repository: https://github.com/Zalava/zalava-module-tika.git
+      license: Apache-2.0
+    build:
+      command: ["./gradlew", "build"]
+      verificationCommand: ["./gradlew", "test"]
+    compatibility:
+      seaRuntime: ">=1.0.0 <2.0.0"
+    configurationSchema:
+      type: object
+      additionalProperties: false
+      properties:
+        services:
+          type: object
+          additionalProperties: false
+          properties:
+            ocrWorkerUrl:
+              type: string
+              format: uri
+              description: Private, administrator-configured local OCR worker endpoint.
+            ocrLanguages:
+              type: string
+              pattern: "^[a-z]{3}(\\+[a-z]{3})*$"
+    factories:
+      - factoryId: services
+        providerType: content-extractor
+    services:
+      provided:
+        - serviceId: content-extractor
+          contractVersion: "1"
+      required: []
+    operations: []
+    security:
+      permissions: []
