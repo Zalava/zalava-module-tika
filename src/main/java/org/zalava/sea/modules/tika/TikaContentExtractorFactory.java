@@ -13,10 +13,10 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
-import org.zalava.SeaServiceContract;
-import org.zalava.SeaServiceDescriptor;
-import org.zalava.SeaServiceFactory;
-import org.zalava.SeaServiceFactoryContext;
+import org.zalava.ZalavaServiceContract;
+import org.zalava.ZalavaServiceDescriptor;
+import org.zalava.ZalavaServiceFactory;
+import org.zalava.ZalavaServiceFactoryContext;
 import org.zalava.content.ContentExtractionFailure;
 import org.zalava.content.ContentExtractionFailureCategory;
 import org.zalava.content.ContentExtractionResult;
@@ -27,22 +27,22 @@ import org.zalava.content.ContentExtractor;
 import org.zalava.content.ContentProcessor;
 import org.xml.sax.SAXException;
 
-final class TikaContentExtractorFactory implements SeaServiceFactory<ContentExtractor> {
+final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentExtractor> {
   private static final ContentProcessor PROCESSOR = new ContentProcessor("apache-tika", "4.0.0");
 
   @Override
-  public SeaServiceDescriptor descriptor() {
-    return new SeaServiceDescriptor(
+  public ZalavaServiceDescriptor descriptor() {
+    return new ZalavaServiceDescriptor(
         ContentExtractor.CONTRACT.serviceId(), TikaSeaModule.MODULE_ID, ContentExtractor.CONTRACT.contractVersion());
   }
 
   @Override
-  public SeaServiceContract<ContentExtractor> contract() {
+  public ZalavaServiceContract<ContentExtractor> contract() {
     return ContentExtractor.CONTRACT;
   }
 
   @Override
-  public ContentExtractor create(SeaServiceFactoryContext context) {
+  public ContentExtractor create(ZalavaServiceFactoryContext context) {
     ContentExtractor tika = this::extract;
     WorkerOcrClient worker = WorkerOcrClient.from(context == null ? Map.of() : context.configuration());
     if (worker == null) return tika;
