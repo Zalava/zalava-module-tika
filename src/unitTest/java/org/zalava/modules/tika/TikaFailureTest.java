@@ -13,8 +13,8 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
-import org.zalava.*;
-import org.zalava.content.*;
+import org.zalava.api.*;
+import org.zalava.api.extensions.content.*;
 
 class TikaFailureTest {
   @Test

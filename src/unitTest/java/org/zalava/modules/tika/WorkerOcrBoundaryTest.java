@@ -8,7 +8,7 @@ import java.net.*;
 import java.net.http.*;
 import java.util.*;
 import org.junit.jupiter.api.Test;
-import org.zalava.content.*;
+import org.zalava.api.extensions.content.*;
 
 class WorkerOcrBoundaryTest {
   @Test

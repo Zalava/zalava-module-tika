@@ -12,19 +12,19 @@ import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zalava.ZalavaServiceFactory;
-import org.zalava.content.ContentExtractionFailure;
-import org.zalava.content.ContentExtractionFailureCategory;
-import org.zalava.content.ContentExtractionLimits;
-import org.zalava.content.ContentExtractionOutcome;
-import org.zalava.content.ContentExtractionRequest;
-import org.zalava.content.ContentExtractionResult;
-import org.zalava.content.ContentExtractor;
-import org.zalava.content.ContentSourceInput;
-import org.zalava.content.ContentSourceMetadata;
-import org.zalava.testing.ConfigFixture;
-import org.zalava.testing.ModuleContractKit;
-import org.zalava.testing.ServiceFixture;
+import org.zalava.api.ZalavaServiceFactory;
+import org.zalava.api.extensions.content.ContentExtractionFailure;
+import org.zalava.api.extensions.content.ContentExtractionFailureCategory;
+import org.zalava.api.extensions.content.ContentExtractionLimits;
+import org.zalava.api.extensions.content.ContentExtractionOutcome;
+import org.zalava.api.extensions.content.ContentExtractionRequest;
+import org.zalava.api.extensions.content.ContentExtractionResult;
+import org.zalava.api.extensions.content.ContentExtractor;
+import org.zalava.api.extensions.content.ContentSourceInput;
+import org.zalava.api.extensions.content.ContentSourceMetadata;
+import org.zalava.api.testing.ConfigFixture;
+import org.zalava.api.testing.ModuleContractKit;
+import org.zalava.api.testing.ServiceFixture;
 
 /**
  * Exercises the real built module JAR at the stable {@code module-api} boundary through the

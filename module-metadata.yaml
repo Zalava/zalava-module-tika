@@ -1,14 +1,14 @@
 schemaVersion: 1
 modules:
   - moduleId: zalava-module-tika
-    version: 0.1.0-alpha.2
+    version: 0.1.0-alpha.3
     displayName: Apache Tika Content Extractor
     description: Bounded Apache Tika 4 content extraction for SEA knowledge sources.
     supportUrl: https://github.com/Zalava/zalava-module-tika
     artifact:
       groupId: org.zalava.modules
       artifactId: zalava-module-tika
-      version: 0.1.0-alpha.2
+      version: 0.1.0-alpha.3
     source:
       repository: https://github.com/Zalava/zalava-module-tika.git
       license: Apache-2.0
