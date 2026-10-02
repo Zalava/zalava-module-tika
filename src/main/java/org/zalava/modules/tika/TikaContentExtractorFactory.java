@@ -14,18 +14,18 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
-import org.zalava.ZalavaServiceContract;
-import org.zalava.ZalavaServiceDescriptor;
-import org.zalava.ZalavaServiceFactory;
-import org.zalava.ZalavaServiceFactoryContext;
-import org.zalava.content.ContentExtractionFailure;
-import org.zalava.content.ContentExtractionFailureCategory;
-import org.zalava.content.ContentExtractionOutcome;
-import org.zalava.content.ContentExtractionRequest;
-import org.zalava.content.ContentExtractionResult;
-import org.zalava.content.ContentExtractor;
-import org.zalava.content.ContentProcessor;
-import org.zalava.content.ContentSourceInput;
+import org.zalava.api.ZalavaServiceContract;
+import org.zalava.api.ZalavaServiceDescriptor;
+import org.zalava.api.ZalavaServiceFactory;
+import org.zalava.api.ZalavaServiceFactoryContext;
+import org.zalava.api.extensions.content.ContentExtractionFailure;
+import org.zalava.api.extensions.content.ContentExtractionFailureCategory;
+import org.zalava.api.extensions.content.ContentExtractionOutcome;
+import org.zalava.api.extensions.content.ContentExtractionRequest;
+import org.zalava.api.extensions.content.ContentExtractionResult;
+import org.zalava.api.extensions.content.ContentExtractor;
+import org.zalava.api.extensions.content.ContentProcessor;
+import org.zalava.api.extensions.content.ContentSourceInput;
 
 final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentExtractor> {
   private static final ContentProcessor PROCESSOR = new ContentProcessor("apache-tika", "4.0.0");
@@ -124,7 +124,7 @@ final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentE
   }
 
   private static ContentExtractionFailure failure(
-      org.zalava.content.ContentExtractionRequest request,
+      org.zalava.api.extensions.content.ContentExtractionRequest request,
       ContentExtractionFailureCategory category,
       String detail) {
     return ContentExtractionFailure.forRequest(request, PROCESSOR, category, detail);

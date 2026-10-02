@@ -6,12 +6,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
-import org.zalava.content.ContentExtractionFailure;
-import org.zalava.content.ContentExtractionFailureCategory;
-import org.zalava.content.ContentExtractionOutcome;
-import org.zalava.content.ContentExtractionRequest;
-import org.zalava.content.ContentExtractionResult;
-import org.zalava.content.ContentProcessor;
+import org.zalava.api.extensions.content.ContentExtractionFailure;
+import org.zalava.api.extensions.content.ContentExtractionFailureCategory;
+import org.zalava.api.extensions.content.ContentExtractionOutcome;
+import org.zalava.api.extensions.content.ContentExtractionRequest;
+import org.zalava.api.extensions.content.ContentExtractionResult;
+import org.zalava.api.extensions.content.ContentProcessor;
 
 /** Explicit, bounded client for the separately isolated OCR worker. */
 final class WorkerOcrClient {
