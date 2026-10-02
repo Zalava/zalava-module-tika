@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zalava.ZalavaServiceFactory;
 import org.zalava.content.ContentExtractionFailure;
 import org.zalava.content.ContentExtractionFailureCategory;
@@ -22,13 +25,11 @@ import org.zalava.content.ContentSourceMetadata;
 import org.zalava.testing.ConfigFixture;
 import org.zalava.testing.ModuleContractKit;
 import org.zalava.testing.ServiceFixture;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
- * Exercises the real built module JAR at the stable {@code module-api} boundary through the released
- * contract kit. Host-owned resolution, validation, permissions and persistence stay covered by SEA.
+ * Exercises the real built module JAR at the stable {@code module-api} boundary through the
+ * released contract kit. Host-owned resolution, validation, permissions and persistence stay
+ * covered by SEA.
  */
 class TikaSeaModuleTest {
   private static final String MODULE_ID = "zalava-module-tika";
@@ -57,12 +58,7 @@ class TikaSeaModuleTest {
   void loadsTheModuleFromTheBuiltArtifact() {
     assertThat(kit.module().getClass().getClassLoader()).isNotSameAs(getClass().getClassLoader());
     assertThat(
-            kit.module()
-                .getClass()
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toString())
+            kit.module().getClass().getProtectionDomain().getCodeSource().getLocation().toString())
         .endsWith(".jar");
   }
 
@@ -103,7 +99,8 @@ class TikaSeaModuleTest {
 
       ContentExtractionResult result =
           successful(
-              extractor.extract(request("<h1>Hello</h1><p>world</p>", "page.html", "text/html", 1_024)));
+              extractor.extract(
+                  request("<h1>Hello</h1><p>world</p>", "page.html", "text/html", 1_024)));
 
       assertThat(result.text()).contains("Hello").contains("world");
     }
