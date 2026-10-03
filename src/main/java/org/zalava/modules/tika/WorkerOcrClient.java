@@ -15,7 +15,7 @@ import org.zalava.api.extensions.content.ContentProcessor;
 
 /** Explicit, bounded client for the separately isolated OCR worker. */
 final class WorkerOcrClient {
-  private static final ContentProcessor PROCESSOR = new ContentProcessor("sea-ocr-worker", "1");
+  private static final ContentProcessor PROCESSOR = new ContentProcessor("zalava-ocr-worker", "1");
   private static final tools.jackson.databind.json.JsonMapper JSON =
       new tools.jackson.databind.json.JsonMapper();
   private final URI endpoint;

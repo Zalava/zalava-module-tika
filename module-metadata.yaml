@@ -3,7 +3,7 @@ modules:
   - moduleId: zalava-module-tika
     version: 0.1.0-alpha.3
     displayName: Apache Tika Content Extractor
-    description: Bounded Apache Tika 4 content extraction for SEA knowledge sources.
+    description: Bounded Apache Tika 4 content extraction for Zalava knowledge sources.
     supportUrl: https://github.com/Zalava/zalava-module-tika
     artifact:
       groupId: org.zalava.modules
@@ -16,7 +16,7 @@ modules:
       command: ["./gradlew", "build"]
       verificationCommand: ["./gradlew", "test"]
     compatibility:
-      seaRuntime: ">=1.0.0 <2.0.0"
+      zalavaRuntime: ">=1.0.0 <2.0.0"
     configurationSchema:
       type: object
       additionalProperties: false

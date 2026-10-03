@@ -29,9 +29,9 @@ import org.zalava.api.testing.ServiceFixture;
 /**
  * Exercises the real built module JAR at the stable {@code module-api} boundary through the
  * released contract kit. Host-owned resolution, validation, permissions and persistence stay
- * covered by SEA.
+ * covered by Zalava.
  */
-class TikaSeaModuleTest {
+class TikaZalavaModuleTest {
   private static final String MODULE_ID = "zalava-module-tika";
   private static final String SHA_256 = "0".repeat(64);
 
