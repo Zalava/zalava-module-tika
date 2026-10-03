@@ -91,7 +91,7 @@ class TikaFailureTest {
     try {
       var context =
           new ZalavaServiceFactoryContext(
-              TikaSeaModule.MODULE_ID,
+              TikaZalavaModule.MODULE_ID,
               Map.of(),
               Map.of(),
               Map.of("ocrWorkerUrl", "http://127.0.0.1:" + server.getAddress().getPort()),

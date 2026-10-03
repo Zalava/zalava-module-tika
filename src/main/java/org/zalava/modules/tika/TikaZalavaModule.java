@@ -10,7 +10,7 @@ import org.zalava.api.ZalavaModule;
 import org.zalava.api.ZalavaServiceFactory;
 
 /** Service-only module for bounded Apache Tika 4 extraction. */
-public final class TikaSeaModule implements ZalavaModule {
+public final class TikaZalavaModule implements ZalavaModule {
   public static final String MODULE_ID = "zalava-module-tika";
 
   @Override
@@ -31,7 +31,7 @@ public final class TikaSeaModule implements ZalavaModule {
 
   static String version() {
     Properties properties = new Properties();
-    try (InputStream input = TikaSeaModule.class.getResourceAsStream("/module.properties")) {
+    try (InputStream input = TikaZalavaModule.class.getResourceAsStream("/module.properties")) {
       if (input == null) throw new IllegalStateException("Missing module version metadata");
       properties.load(input);
     } catch (IOException exception) {

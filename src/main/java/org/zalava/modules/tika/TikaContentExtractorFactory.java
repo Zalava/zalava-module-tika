@@ -34,7 +34,7 @@ final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentE
   public ZalavaServiceDescriptor descriptor() {
     return new ZalavaServiceDescriptor(
         ContentExtractor.CONTRACT.serviceId(),
-        TikaSeaModule.MODULE_ID,
+        TikaZalavaModule.MODULE_ID,
         ContentExtractor.CONTRACT.contractVersion());
   }
 
