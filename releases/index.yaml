@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "moduleId": "zalava-module-tika",
+  "releases": [
+    {
+      "version": "0.1.0-alpha.4",
+      "releaseTag": "v0.1.0-alpha.4",
+      "artifact": {
+        "groupId": "org.zalava.modules",
+        "artifactId": "zalava-module-tika",
+        "version": "0.1.0-alpha.4",
+        "sha256": "bb1467592860c7a9787c20a8600eb46e8c43480c2f2c390b2ef2680a91371b05",
+        "type": "github-release-assets",
+        "repositoryUri": "https://github.com/Zalava/zalava-module-tika",
+        "releaseTag": "v0.1.0-alpha.4",
+        "assetName": "zalava-module-tika-0.1.0-alpha.4.jar"
+      },
+      "artifactBundle": true,
+      "source": {
+        "repository": "https://github.com/Zalava/zalava-module-tika.git",
+        "revision": "a959d87833d6bc5994f5c0dafa90584664e3f60c",
+        "license": "Apache-2.0"
+      },
+      "compatibility": {
+        "zalavaRuntime": ">=1.0.0 <2.0.0"
+      },
+      "security": {
+        "permissions": []
+      }
+    }
+  ]
+}
