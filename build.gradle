@@ -138,7 +138,19 @@ tasks.register('bundleJar', Zip) {
     }
 }
 
+def configurationSchemaFile = layout.buildDirectory.file('generated/tika-configuration/module-configuration.json')
+def generateConfigurationSchema = tasks.register('generateConfigurationSchema') {
+    inputs.file(moduleMetadataFile)
+    outputs.file(configurationSchemaFile)
+    doLast {
+        def output = configurationSchemaFile.get().asFile
+        output.parentFile.mkdirs()
+        output.setText(groovy.json.JsonOutput.toJson(moduleMetadata.modules[0].configurationSchema), 'UTF-8')
+    }
+}
+
 processResources {
+    from(generateConfigurationSchema)
     inputs.property('moduleVersion', project.version)
     filesMatching('module.properties') {
         expand(moduleVersion: project.version)
