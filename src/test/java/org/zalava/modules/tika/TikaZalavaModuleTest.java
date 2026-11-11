@@ -79,6 +79,29 @@ class TikaZalavaModuleTest {
   }
 
   @Test
+  void exposesOptionalOcrSettingsThroughTheRuntimeDescriptor() {
+    Map<String, Object> schema = kit.module().configuration().jsonSchema();
+    Map<?, ?> factories = (Map<?, ?>) schema.get("properties");
+    assertThat(factories).isNotNull();
+    Map<?, ?> services = (Map<?, ?>) factories.get("services");
+    assertThat(services).isNotNull();
+    assertThat(services.get("required")).isNull();
+
+    Map<?, ?> fields = (Map<?, ?>) services.get("properties");
+    assertThat(fields).isNotNull();
+    Map<?, ?> url = (Map<?, ?>) fields.get("ocrWorkerUrl");
+    assertThat(url).isNotNull();
+    assertThat(url.get("type")).isEqualTo("string");
+    assertThat(url.get("format")).isEqualTo("uri");
+    Map<?, ?> languages = (Map<?, ?>) fields.get("ocrLanguages");
+    assertThat(languages).isNotNull();
+    assertThat(languages.get("type")).isEqualTo("string");
+    String pattern = (String) languages.get("pattern");
+    assertThat("eng+spa").matches(pattern);
+    assertThat("english").doesNotMatch(pattern);
+  }
+
+  @Test
   void extractsPlainTextThroughTheTypedServiceContract() {
     try (ServiceFixture services = kit.services()) {
       ContentExtractor extractor = services.service(ContentExtractor.CONTRACT);
