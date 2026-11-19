@@ -3,12 +3,17 @@ package org.zalava.modules.tika;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +27,7 @@ import org.zalava.api.extensions.content.ContentExtractionResult;
 import org.zalava.api.extensions.content.ContentExtractor;
 import org.zalava.api.extensions.content.ContentSourceInput;
 import org.zalava.api.extensions.content.ContentSourceMetadata;
+import org.zalava.api.extensions.managed.ManagedOcrService;
 import org.zalava.api.testing.ConfigFixture;
 import org.zalava.api.testing.ModuleContractKit;
 import org.zalava.api.testing.ServiceFixture;
@@ -86,6 +92,7 @@ class TikaZalavaModuleTest {
     Map<?, ?> services = (Map<?, ?>) factories.get("services");
     assertThat(services).isNotNull();
     assertThat(services.get("required")).isNull();
+    assertThat(services.get("title")).isEqualTo("OCR setup");
 
     Map<?, ?> fields = (Map<?, ?>) services.get("properties");
     assertThat(fields).isNotNull();
@@ -93,12 +100,56 @@ class TikaZalavaModuleTest {
     assertThat(url).isNotNull();
     assertThat(url.get("type")).isEqualTo("string");
     assertThat(url.get("format")).isEqualTo("uri");
+    assertThat(url.get("title")).isEqualTo("Local OCR worker URL");
     Map<?, ?> languages = (Map<?, ?>) fields.get("ocrLanguages");
     assertThat(languages).isNotNull();
     assertThat(languages.get("type")).isEqualTo("string");
+    assertThat(languages.get("title")).isEqualTo("OCR languages");
+    assertThat(languages.get("default")).isEqualTo("eng");
     String pattern = (String) languages.get("pattern");
     assertThat("eng+spa").matches(pattern);
     assertThat("english").doesNotMatch(pattern);
+  }
+
+  @Test
+  void builtModuleDeclaresAndUsesTheManagedWorker() throws IOException {
+    assertThat(kit.module().managedServices())
+        .singleElement()
+        .satisfies(
+            worker -> {
+              assertThat(worker.serviceId()).isEqualTo(ManagedOcrService.SERVICE_ID);
+              assertThat(worker.desiredState().artifactReference())
+                  .isEqualTo(
+                      "ghcr.io/zalava/zalava-tika-ocr-worker@sha256:ec6134c799a81b0239b850df1c6698b8bcfee2632cae95b769bad77f86ca3c76");
+              assertThat(worker.desiredState().networkIsolated()).isTrue();
+              assertThat(worker.desiredState().ports()).isEmpty();
+            });
+    var image = new ByteArrayOutputStream();
+    ImageIO.write(new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB), "png", image);
+    byte[] bytes = image.toByteArray();
+    ManagedOcrService worker =
+        job -> {
+          assertThat(job.document()).containsExactly(bytes);
+          assertThat(job.languages()).isEqualTo("eng");
+          return Optional.of("{\"text\":\"managed OCR result\"}");
+        };
+
+    try (var services =
+        ServiceFixture.create(
+            kit.module(), ConfigFixture.empty(), Map.of(ManagedOcrService.CONTRACT, worker))) {
+      var result =
+          successful(
+              services
+                  .service(ContentExtractor.CONTRACT)
+                  .extract(
+                      request(
+                          new ByteArrayInputStream(bytes),
+                          bytes.length,
+                          "scan.png",
+                          "image/png",
+                          1024)));
+      assertThat(result.text()).isEqualTo("managed OCR result");
+    }
   }
 
   @Test

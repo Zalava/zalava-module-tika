@@ -1,14 +1,14 @@
 schemaVersion: 1
 modules:
   - moduleId: zalava-module-tika
-    version: 0.1.0-alpha.5
+    version: 0.1.0-alpha.6
     displayName: Apache Tika Content Extractor
     description: Bounded Apache Tika 4 content extraction for Zalava knowledge sources.
     supportUrl: https://github.com/Zalava/zalava-module-tika
     artifact:
       groupId: org.zalava.modules
       artifactId: zalava-module-tika
-      version: 0.1.0-alpha.5
+      version: 0.1.0-alpha.6
     source:
       repository: https://github.com/Zalava/zalava-module-tika.git
       license: Apache-2.0
@@ -23,14 +23,21 @@ modules:
       properties:
         services:
           type: object
+          title: OCR setup
+          description: Optional settings for extracting text from scanned documents.
           additionalProperties: false
           properties:
             ocrWorkerUrl:
               type: string
               format: uri
-              description: Private, administrator-configured local OCR worker endpoint.
+              title: Local OCR worker URL
+              description: Enter the address of a running OCR worker on this computer. Leave blank to use the Zalava-managed worker after an administrator approves it.
             ocrLanguages:
               type: string
+              title: OCR languages
+              description: English (eng) is used when blank. Join language codes with + to recognize more than one language.
+              default: eng
+              examples: [eng, spa, cat, eng+spa]
               pattern: "^[a-z]{3}(\\+[a-z]{3})*$"
     factories:
       - factoryId: services
