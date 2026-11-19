@@ -26,6 +26,7 @@ import org.zalava.api.extensions.content.ContentExtractionResult;
 import org.zalava.api.extensions.content.ContentExtractor;
 import org.zalava.api.extensions.content.ContentProcessor;
 import org.zalava.api.extensions.content.ContentSourceInput;
+import org.zalava.api.extensions.managed.ManagedOcrService;
 
 final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentExtractor> {
   private static final ContentProcessor PROCESSOR = new ContentProcessor("apache-tika", "4.0.0");
@@ -48,7 +49,15 @@ final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentE
     ContentExtractor tika = this::extract;
     WorkerOcrClient worker =
         WorkerOcrClient.from(context == null ? Map.of() : context.configuration());
+    if (worker == null && context != null) {
+      worker =
+          context
+              .service(ManagedOcrService.CONTRACT)
+              .map(service -> WorkerOcrClient.managed(service, context.configuration()))
+              .orElse(null);
+    }
     if (worker == null) return tika;
+    var ocr = worker;
     return request -> {
       byte[] bytes;
       try (var input = request.input().openStream()) {
@@ -67,8 +76,8 @@ final class TikaContentExtractorFactory implements ZalavaServiceFactory<ContentE
       ContentExtractionOutcome outcome = tika.extract(tikaRequest);
       if (!(outcome instanceof ContentExtractionResult result)
           || !result.text().isBlank()
-          || !worker.supports(request.source().mediaType())) return outcome;
-      return worker.extract(request, bytes);
+          || !ocr.supports(request.source().mediaType())) return outcome;
+      return ocr.extract(request, bytes);
     };
   }
 

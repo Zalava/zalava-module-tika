@@ -3,12 +3,18 @@ package org.zalava.modules.tika;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.net.http.*;
 import java.util.*;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
+import org.zalava.api.RequirementMode;
+import org.zalava.api.ZalavaServiceFactoryContext;
+import org.zalava.api.ZalavaServiceRequirement;
 import org.zalava.api.extensions.content.*;
+import org.zalava.api.extensions.managed.ManagedOcrService;
 
 class WorkerOcrBoundaryTest {
   @Test
@@ -90,6 +96,49 @@ class WorkerOcrBoundaryTest {
               .extract(request(100), new byte[0]),
           error instanceof HttpTimeoutException ? "TIMED_OUT" : "UNAVAILABLE");
     }
+  }
+
+  @Test
+  void usesTheManagedWorkerForABlankImageWithoutAnExternalUrl() throws IOException {
+    var image = new ByteArrayOutputStream();
+    ImageIO.write(new BufferedImage(32, 32, BufferedImage.TYPE_INT_RGB), "png", image);
+    byte[] bytes = image.toByteArray();
+    var contract = ManagedOcrService.CONTRACT;
+    ManagedOcrService service =
+        request -> {
+          assertThat(request.document()).isEqualTo(bytes);
+          assertThat(request.languages()).isEqualTo("eng");
+          return Optional.of("{\"text\":\"managed scan\"}");
+        };
+    var context =
+        new ZalavaServiceFactoryContext(
+            TikaZalavaModule.MODULE_ID,
+            Map.of(contract, service),
+            Map.of(
+                contract.serviceId(),
+                new ZalavaServiceRequirement(
+                    contract.serviceId(), contract.contractVersion(), RequirementMode.OPTIONAL)));
+    var request =
+        new ContentExtractionRequest(
+            new ContentSourceMetadata("scan.png", "image/png", bytes.length, "0".repeat(64)),
+            ContentSourceInput.singleUse(new ByteArrayInputStream(bytes), bytes.length),
+            new ContentExtractionLimits(bytes.length, 100, 32, 256, 0));
+    assertThat(new TikaContentExtractorFactory().create(context).extract(request))
+        .isInstanceOfSatisfying(
+            ContentExtractionResult.class,
+            result -> assertThat(result.text()).isEqualTo("managed scan"));
+  }
+
+  @Test
+  void handlesUnavailableManagedWorkerAndBounds() {
+    var worker = WorkerOcrClient.managed(request -> Optional.empty(), Map.of());
+    assertCategory(worker.extract(request(100), new byte[] {1}), "UNAVAILABLE");
+    assertCategory(
+        worker.extract(request(100), new byte[10 * 1024 * 1024 + 1]), "INPUT_LIMIT_EXCEEDED");
+    var failed =
+        WorkerOcrClient.managed(
+            request -> Optional.of("{\"code\":\"DEADLINE_EXCEEDED\"}"), Map.of());
+    assertCategory(failed.extract(request(100), new byte[] {1}), "TIMED_OUT");
   }
 
   private static ContentExtractionRequest request(int maximum) {

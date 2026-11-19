@@ -12,6 +12,7 @@ import org.zalava.api.extensions.content.ContentExtractionOutcome;
 import org.zalava.api.extensions.content.ContentExtractionRequest;
 import org.zalava.api.extensions.content.ContentExtractionResult;
 import org.zalava.api.extensions.content.ContentProcessor;
+import org.zalava.api.extensions.managed.ManagedOcrService;
 
 /** Explicit, bounded client for the separately isolated OCR worker. */
 final class WorkerOcrClient {
@@ -21,6 +22,7 @@ final class WorkerOcrClient {
   private final URI endpoint;
   private final String languages;
   private final HttpClient client;
+  private final ManagedOcrService managed;
 
   private WorkerOcrClient(URI endpoint, String languages) {
     this(
@@ -28,6 +30,12 @@ final class WorkerOcrClient {
   }
 
   WorkerOcrClient(URI endpoint, String languages, HttpClient client) {
+    this(endpoint, languages, client, null);
+  }
+
+  private WorkerOcrClient(
+      URI endpoint, String languages, HttpClient client, ManagedOcrService managed) {
+    this.managed = managed;
     this.endpoint = endpoint;
     this.languages = languages;
     this.client = client;
@@ -42,12 +50,18 @@ final class WorkerOcrClient {
             || "127.0.0.1".equals(uri.getHost())
             || "::1".equals(uri.getHost())))
       throw new IllegalArgumentException("ocrWorkerUrl must be a loopback http URI");
+    return new WorkerOcrClient(uri.resolve("/v1/ocr"), languages(configuration));
+  }
+
+  static WorkerOcrClient managed(ManagedOcrService service, Map<String, Object> configuration) {
+    return new WorkerOcrClient(null, languages(configuration), null, service);
+  }
+
+  private static String languages(Map<String, Object> configuration) {
     Object configuredLanguages = configuration.get("ocrLanguages");
-    String languages =
-        configuredLanguages instanceof String text && text.matches("[a-z]{3}(\\+[a-z]{3})*")
-            ? text
-            : "eng";
-    return new WorkerOcrClient(uri.resolve("/v1/ocr"), languages);
+    return configuredLanguages instanceof String text && text.matches("[a-z]{3}(\\+[a-z]{3})*")
+        ? text
+        : "eng";
   }
 
   boolean supports(String mediaType) {
@@ -58,6 +72,26 @@ final class WorkerOcrClient {
 
   ContentExtractionOutcome extract(ContentExtractionRequest request, byte[] bytes) {
     try {
+      if (managed != null) {
+        if (bytes.length > 10 * 1024 * 1024) {
+          return failure(
+              request,
+              ContentExtractionFailureCategory.INPUT_LIMIT_EXCEEDED,
+              "OCR input exceeds the worker byte limit");
+        }
+        var response =
+            managed.extract(
+                new ManagedOcrService.Request(request.source().mediaType(), languages, bytes));
+        if (response.isEmpty()) {
+          return failure(
+              request, ContentExtractionFailureCategory.UNAVAILABLE, "OCR worker is unavailable");
+        }
+        String body = response.get();
+        if (!JSON.readTree(body).path("code").isMissingNode()) {
+          return failure(request, category(body), "OCR worker could not extract source");
+        }
+        return extractedText(request, body);
+      }
       HttpRequest call =
           HttpRequest.newBuilder(endpoint)
               .timeout(Duration.ofSeconds(16))
@@ -67,26 +101,7 @@ final class WorkerOcrClient {
               .build();
       HttpResponse<String> response = client.send(call, HttpResponse.BodyHandlers.ofString());
       if (response.statusCode() == 200) {
-        var text = JSON.readTree(response.body()).path("text");
-        if (!text.isString())
-          return failure(
-              request,
-              ContentExtractionFailureCategory.MALFORMED_INPUT,
-              "OCR worker returned an invalid response");
-        String output = text.asString();
-        if (output.isBlank())
-          return failure(
-              request,
-              ContentExtractionFailureCategory.UNAVAILABLE,
-              "OCR worker returned no recognized text");
-        if (output.length() > request.limits().maximumTextCharacters()) {
-          return failure(
-              request,
-              ContentExtractionFailureCategory.OUTPUT_LIMIT_EXCEEDED,
-              "OCR worker output exceeded requested limit");
-        }
-        return ContentExtractionResult.forRequest(
-            request, PROCESSOR, output, Map.of(), java.util.List.of());
+        return extractedText(request, response.body());
       }
       return failure(request, category(response.body()), "OCR worker could not extract source");
     } catch (java.net.http.HttpTimeoutException exception) {
@@ -98,6 +113,30 @@ final class WorkerOcrClient {
     }
   }
 
+  private static ContentExtractionOutcome extractedText(
+      ContentExtractionRequest request, String body) {
+    var text = JSON.readTree(body).path("text");
+    if (!text.isString())
+      return failure(
+          request,
+          ContentExtractionFailureCategory.MALFORMED_INPUT,
+          "OCR worker returned an invalid response");
+    String output = text.asString();
+    if (output.isBlank())
+      return failure(
+          request,
+          ContentExtractionFailureCategory.UNAVAILABLE,
+          "OCR worker returned no recognized text");
+    if (output.length() > request.limits().maximumTextCharacters()) {
+      return failure(
+          request,
+          ContentExtractionFailureCategory.OUTPUT_LIMIT_EXCEEDED,
+          "OCR worker output exceeded requested limit");
+    }
+    return ContentExtractionResult.forRequest(
+        request, PROCESSOR, output, Map.of(), java.util.List.of());
+  }
+
   private static ContentExtractionFailureCategory category(String body) {
     String code;
     try {
@@ -107,7 +146,7 @@ final class WorkerOcrClient {
     }
     if (code.isEmpty()) return ContentExtractionFailureCategory.UNAVAILABLE;
     return switch (code) {
-      case "EMPTY_RESULT" -> ContentExtractionFailureCategory.UNAVAILABLE;
+      case "EMPTY_RESULT", "UNAVAILABLE" -> ContentExtractionFailureCategory.UNAVAILABLE;
       case "INPUT_LIMIT_EXCEEDED", "PAGE_LIMIT_EXCEEDED", "PIXEL_LIMIT_EXCEEDED" ->
           ContentExtractionFailureCategory.INPUT_LIMIT_EXCEEDED;
       case "OUTPUT_LIMIT_EXCEEDED" -> ContentExtractionFailureCategory.OUTPUT_LIMIT_EXCEEDED;
